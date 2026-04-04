@@ -1,0 +1,229 @@
+---
+title: |
+  DAT 201: Thematic Inquiry
+subtitle: |
+  Why Hockey Teams Should Add Tracking-Based Pre-Shot Movement Metrics to Classical xG Models
+author: |
+  Rento Saijo
+date: 'April 3, 2026'
+fontsize: 10pt
+documentclass: extarticle
+geometry: top=1.25in, bottom=1.25in, left=1.5in, right=1.5in
+urlcolor: blue
+linkcolor: blue
+citecolor: blue
+output:
+  bookdown::pdf_document2:
+    keep_tex: true
+    toc: false
+    fig_width: 6.2
+    fig_height: 4.2
+    fig_caption: true
+
+header-includes:
+  - |
+    \usepackage{xcolor}
+    \usepackage{hyperref}
+    \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue}
+    \usepackage{float}
+    \usepackage{microtype}
+    \usepackage{fancyhdr}
+    \usepackage{lastpage}
+    \usepackage{xspace}
+    \floatplacement{figure}{H}
+    \setcounter{secnumdepth}{0}
+    \makeatletter
+    \newcommand{\@subtitle}{}
+    \newcommand{\subtitle}[1]{\gdef\@subtitle{#1}}
+    \renewcommand{\maketitle}{
+      \begin{center}
+        {\Large \textsc{\@title} \par}
+        \vspace{0.35em}
+        {\Large \bfseries \@subtitle \par}
+        \vspace{0.5em}
+        {\normalsize \@author \par}
+        {\normalsize \@date \par}
+      \end{center}
+      \vspace{0.8em}
+    }
+    \makeatother
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{0.45em}
+    \pagestyle{fancy}
+    \fancyhf{}
+    \fancyfoot[C]{\small\textsc{Page}~\thepage~\textsc{of}~\pageref{LastPage}}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+---
+
+```{r setup, include = FALSE}
+# ----- Setup ----- #
+
+# Set options.
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align = 'center')
+options(width = 125)
+options(scipen = 999)
+
+# Load libraries.
+suppressMessages(library(data.table))
+suppressMessages(library(ggplot2))
+
+# Set fonts.
+sysfonts::font_add(
+  family     = 'cmuserif',
+  regular    = '/Users/rsai_91/Library/Fonts/cmu.serif-roman.ttf',
+  bold       = '/Users/rsai_91/Library/Fonts/cmu.serif-bold.ttf',
+  italic     = '/Users/rsai_91/Library/Fonts/cmu.serif-italic.ttf',
+  bolditalic = '/Users/rsai_91/Library/Fonts/cmu.serif-bolditalic.ttf'
+)
+showtext::showtext_opts(dpi = 500)
+showtext::showtext_auto(enable = TRUE)
+knitr::opts_chunk$set(dev = 'CairoPDF')
+par(family = 'cmuserif')
+ggplot2::theme_set(
+  ggplot2::theme_minimal(base_family = 'cmuserif', base_size = 10) +
+    ggplot2::theme(
+      panel.grid.minor = ggplot2::element_blank(),
+      plot.title.position = 'plot'
+    )
+)
+
+# ----- Helpers ----- #
+
+# Format proportions as percents.
+pct_fmt <- function(x, digits = 1) {
+  sprintf(paste0('%0.', digits, 'f%%'), 100 * x)
+}
+
+# Format regular numbers.
+num_fmt <- function(x, digits = 1) {
+  format(round(x, digits), nsmall = digits, trim = TRUE)
+}
+
+# ----- Data ----- #
+
+# Build / load the Big Data Cup summary file.
+source('scripts/build_bdc2026_shot_features.R')
+shot_dt <- data.table::fread('data/bdc2026_shot_features.csv')
+
+# Restrict to 5v5 shots that followed a completed play within five seconds.
+play_dt <- shot_dt[even_strength == TRUE & pre_shot_play == TRUE & !is.na(pre_shot_lateral_ft)]
+play_dt[, lateral_10ft := pre_shot_lateral_ft / 10]
+play_dt[, lateral_group := fifelse(
+  pre_shot_lateral_ft < 10, '0-10 ft',
+  fifelse(pre_shot_lateral_ft < 25, '10-25 ft', '25+ ft')
+)]
+play_dt[, lateral_group := factor(lateral_group, levels = c('0-10 ft', '10-25 ft', '25+ ft'))]
+play_dt[, dist_group := cut(
+  shot_distance_ft,
+  breaks = c(0, 25, 40, 55, Inf),
+  right  = FALSE,
+  labels = c('0-25 ft', '25-40 ft', '40-55 ft', '55+ ft')
+)]
+
+# Summaries used in the text.
+n_games        <- uniqueN(shot_dt$game_id)
+n_shots_total  <- nrow(shot_dt)
+n_shots_5v5    <- nrow(shot_dt[even_strength == TRUE])
+n_play_shots   <- nrow(play_dt)
+
+movement_plot_dt <- play_dt[, .(
+  on_net_rate = mean(on_net),
+  n           = .N
+), by = .(dist_group, lateral_group)]
+
+movement_fit_cont <- glm(
+  on_net ~ shot_distance_ft + abs_y_ft + lateral_10ft,
+  data   = play_dt,
+  family = binomial()
+)
+
+movement_fit_cat <- glm(
+  on_net ~ shot_distance_ft + abs_y_ft + lateral_group,
+  data   = play_dt,
+  family = binomial()
+)
+
+or_per_10ft <- exp(coef(movement_fit_cont)['lateral_10ft'])
+or_25plus   <- exp(coef(movement_fit_cat)['lateral_group25+ ft'])
+
+mean_dist_small <- play_dt[lateral_group == '0-10 ft', mean(shot_distance_ft)]
+mean_dist_big   <- play_dt[lateral_group == '25+ ft', mean(shot_distance_ft)]
+
+rate_0_25_small  <- play_dt[dist_group == '0-25 ft'  & lateral_group == '0-10 ft', mean(on_net)]
+rate_0_25_big    <- play_dt[dist_group == '0-25 ft'  & lateral_group == '25+ ft', mean(on_net)]
+rate_25_40_small <- play_dt[dist_group == '25-40 ft' & lateral_group == '0-10 ft', mean(on_net)]
+rate_25_40_big   <- play_dt[dist_group == '25-40 ft' & lateral_group == '25+ ft', mean(on_net)]
+rate_40_55_small <- play_dt[dist_group == '40-55 ft' & lateral_group == '0-10 ft', mean(on_net)]
+rate_40_55_big   <- play_dt[dist_group == '40-55 ft' & lateral_group == '25+ ft', mean(on_net)]
+rate_55_small    <- play_dt[dist_group == '55+ ft'   & lateral_group == '0-10 ft', mean(on_net)]
+rate_55_big      <- play_dt[dist_group == '55+ ft'   & lateral_group == '25+ ft', mean(on_net)]
+```
+
+Traditional hockey metrics such as expected goals, xGF\%, RAPM, and GAR are useful because they summarize large amounts of game action into a few interpretable numbers. But most of them begin from shots or on-ice results, so they do not fully capture whether an offense forced the defense to move before the shot was taken. My thesis is that hockey teams should supplement classical xG-style metrics with tracking-based measures of pre-shot puck movement and passing context, because spatio-temporal data shows how a chance was created, not only where it ended. A shot from 35 feet after a static possession is not the same as a shot from 35 feet after a fast lateral pass into open space.
+
+That distinction matters even for people who do not follow hockey analytics closely. Common sense says that a shooter is more dangerous when the puck arrives after the defense has been stretched side-to-side. The practical question is whether we can measure that effect consistently enough to improve evaluation. Recent work suggests that we can.
+
+# What Existing Tracking Research Shows
+
+Yu et al.\ (2019) make this point directly with a large Sportlogiq spatio-temporal dataset drawn from professional hockey. Their most important result for this paper is simple: at 5-on-5, high pre-shot east-west pace increased shooting percentage by 38\% over low pre-shot east-west pace even though the average shot distance remained in roughly the same 37-40 foot band. They also found that higher pace before the event improved other offensive processes, including successful zone entries and defensive regroups. The implication is that movement before the shot changes outcomes even when shot location stays broadly similar. A model that only looks at the final shot coordinates leaves out part of the story.
+
+Radke, Brecht, and Radke (2022) show the same idea from a passing-lane perspective using 198 NHL games of puck and player tracking data. They found that about 59\% of completed one-bank passes had an indirect lane that was at least as open as the direct alternative, and their expected-movement model reduced receiver-location error in more than 94\% of completed passes. In plain language, the smartest pass is often not the obvious straight-line pass that a static event log would suggest. Tracking data matters because it can measure the geometry and timing that make a play available in the first place.
+
+Together, these sources push the animating question in a more specific direction. Instead of asking, in general, how tracking can create insights beyond xG, a sharper claim is that tracking is especially valuable when it measures pre-shot movement and passing context. Those are exactly the parts of offense that shot-only models tend to flatten.
+
+# What the Big Data Cup Sample Adds
+
+To test that claim with my own data, I used the public 2026 Big Data Cup release, which contains synchronized event and tracking files for `r n_games` anonymized games. The full sample includes `r n_shots_total` shot attempts, of which `r n_shots_5v5` came at 5-on-5. I then linked each 5-on-5 shot to the most recent completed play by the same team within five seconds, which produced `r n_play_shots` even-strength play-to-shot sequences. For each sequence, I measured pre-shot lateral puck movement as the absolute east-west change in the completed play's coordinates. I focus on whether the shot finished on net, because in a ten-game public sample that is a more stable outcome than goals alone.
+
+```{r fig-movement, fig.cap = 'Within every shot-distance band, the highest on-net rate comes from plays with at least 25 feet of lateral puck movement before the shot. Sample restricted to 5-on-5 shots preceded by a completed same-team play within five seconds (n = 655).'}
+ggplot(
+  movement_plot_dt,
+  aes(x = lateral_group, y = on_net_rate, fill = lateral_group)
+) +
+  geom_col(width = 0.72, color = 'white') +
+  geom_text(
+    aes(label = pct_fmt(on_net_rate)),
+    vjust = -0.35,
+    size = 2.8,
+    family = 'cmuserif'
+  ) +
+  facet_wrap(~ dist_group, nrow = 2) +
+  scale_fill_manual(values = c('#8fb9d4', '#4d88b3', '#0b3954')) +
+  scale_y_continuous(
+    limits = c(0, 0.75),
+    labels = function(x) sprintf('%d%%', round(100 * x))
+  ) +
+  labs(
+    x = 'Pre-shot lateral puck movement',
+    y = 'Shots on net rate'
+  ) +
+  theme(
+    legend.position = 'none',
+    axis.title.x = element_text(margin = margin(t = 6)),
+    axis.title.y = element_text(margin = margin(r = 6)),
+    strip.text = element_text(face = 'bold')
+  )
+```
+
+Figure 1 supports the thesis clearly. In every shot-distance band, the highest on-net rate comes from the largest movement group, the plays with at least 25 feet of lateral puck movement. Among shots from 0-25 feet, the on-net rate rises from `r pct_fmt(rate_0_25_small)` after small 0-10 foot movement to `r pct_fmt(rate_0_25_big)` after 25+ feet of movement. In the 25-40 foot band, it rises from `r pct_fmt(rate_25_40_small)` to `r pct_fmt(rate_25_40_big)`. In the 40-55 foot band, it rises from `r pct_fmt(rate_40_55_small)` to `r pct_fmt(rate_40_55_big)`. Even on long shots from 55+ feet, the biggest east-west plays still perform better, `r pct_fmt(rate_55_small)` versus `r pct_fmt(rate_55_big)`.
+
+Just as importantly, this is not simply a closer-shot story. The biggest-movement group in my sample actually came from almost the same average shot distance as the smallest-movement group, `r num_fmt(mean_dist_big)` feet versus `r num_fmt(mean_dist_small)` feet. A logistic regression that controls for shot distance and shot width still finds a positive movement effect: each additional 10 feet of lateral pre-shot movement increased the odds that a shot ended on net by about `r pct_fmt(or_per_10ft - 1)` and the 25+ foot group had about `r num_fmt(or_25plus, 2)` times the on-net odds of the 0-10 foot group. This does not mean lateral movement explains every good chance, but it does mean the process leading into the shot carries independent information that a shot-only model can miss.
+
+This result fits well with the published research. Yu et al.\ argue that east-west pace changes shooting outcomes even when distance is held roughly constant; the Big Data Cup sample shows the same pattern in public competition data. Radke et al.\ show why that should not be surprising: tracking data captures passing choices and receiver movement that ordinary shot logs compress away. The shared lesson is that offensive threat is not only about where a shot came from. It is also about whether the defense had time to get set.
+
+# Conclusion
+
+The two sources support the same argument from different angles. Yu et al.\ show at larger scale that pre-shot movement changes shot success beyond simple distance. Radke et al.\ show that tracking can quantify passing options and moving targets that event summaries miss. My own analysis of the 2026 Big Data Cup sample extends that logic with a concrete public-data example: larger lateral puck movement before the shot is associated with better shot outcomes within every distance band I examined. That is enough evidence to defend a specific thesis: teams should not replace xG with tracking metrics, but they should add tracking-based pre-shot movement measures if they want a fuller picture of offensive creation.
+
+A reasonable counterargument is that modern xG models already include some context, such as shot type, rush flags, or rebound indicators, and that my public sample is much smaller than a full NHL season. I do not think that is a major problem for the thesis, because I am arguing for supplementation rather than replacement. If pre-shot movement still matters after holding shot distance roughly constant, then teams lose information when they collapse everything back to the shot alone. The right response is broader validation, not a return to purely shot-based models.
+
+The most useful future dataset would be frame-level optical or pose-tracking data that identifies goalie sightlines and defender stick positions at the moment of the pass and shot. That kind of data would let analysts distinguish two chances from the same x-y location when one is a clean one-timer into an open lane and the other is a screened point shot through traffic. In other words, it would help measure not only motion, but also visibility and access to the net.
+
+# References
+
+Big Data Cup. ``Big Data Cup 2026 Data Release.'' GitHub release. Accessed April 3, 2026. \url{https://github.com/bigdatacup/Big-Data-Cup-2026/releases/tag/Data}
+
+Radke, David, Tim Brecht, and Daniel Radke. ``Identifying Completed Pass Types and Improving Passing Lane Models.'' Linköping Hockey Analytics Conference, 2022. \url{https://cs.uwaterloo.ca/~brecht/papers/passing-linhac-2022.pdf}
+
+Yu, David, Christopher Boucher, Luke Bornn, and Mehrsan Javan. ``Playing Fast Not Loose: Evaluating team-level pace of play in ice hockey using spatio-temporal possession data.'' MIT Sloan Sports Analytics Conference Research Paper Competition, 2019. \url{https://www.lukebornn.com/papers/yu_sloan_2019.pdf}

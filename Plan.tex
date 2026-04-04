@@ -1,0 +1,78 @@
+\documentclass[10pt]{extarticle}
+\usepackage[letterpaper, margin=1.5in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{cancel}
+\usepackage{tcolorbox}
+\usepackage{bold-extra}
+\usepackage{multicol}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue
+}
+\allowdisplaybreaks
+
+\title{\centering\Large\textsc{\textbf{Thematic Inquiry: Personal AI Plan}}}
+\author{\large \textsc{Rento Saijo}}
+\date{February 23, 2026}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\textsc{Page \thepage\ of \pageref{LastPage}}}
+\renewcommand{\headrulewidth}{0pt}
+
+\tcbset{colframe=darkgray!100, arc=0.1mm, boxrule=2pt, boxsep=1mm}
+\newtcolorbox{problem}[1][]{title={\textsc{#1}}}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\vspace{-1em}\noindent\rule{\linewidth}{0.6pt}\vspace{0.5em}
+
+\begin{problem}
+[Instructions]
+For this assignment, you will write a one-page personal AI use plan. The goal is to generate your own guidelines for how you will use AI both in class and in your personal life/work/etc. For class, any course rules must be followed with AI use.
+
+\medskip
+
+You should consider how you will use AI both for thinking about data and for any more general use. It is fine if your plan is to use no AI at all, but you must talk about why you are making that choice. If you do plan to use AI, you must talk about the potential ethical concerns involved and how you are using AI in a way that is consistent with your own ethics/beliefs.
+
+\medskip
+
+The goal for this document is to be detailed---really think through situations in your actual life where you will or won’t use AI and discuss why you are making that choice. The ultimate goal is for this to serve as an actually useful document for you going forward---of course you can also modify it, but you should be intentional about how you use AI in your life and for what purpose. Finally, it is helpful to cite sources either from class or elsewhere in justifying your choices.
+
+\medskip
+
+Please indicate at the bottom whether you are ok with anonymously sharing your personal plan publicly or if you would prefer not to (e.g., as an example for future classes or in a public presentation about this assignment). The choice is entirely up to you and does not affect your grade either way.
+\end{problem}
+
+AI tools are already embedded in how I work, and I plan to use them intentionally as assistive tools rather than substitutes for my own judgment. My guiding rule is that AI can help me execute and polish, but it should not be the thing deciding what I believe. In practice, that means I will use AI heavily for implementation, checking, and formatting, while keeping the core intellectual work like framing problems, choosing assumptions, interpreting results, and making arguments as my responsibility. This boundary matters to me because recent research on student AI use suggests that a large share of AI interactions are ``direct'' (minimal engagement) and that AI systems often end up doing higher-order tasks like creating and analyzing, which raises the risk of offloading the very thinking students are supposed to practice.\footnote{Kunal Handa et al., ``Anthropic Education Report: How University Students Use Claude'' (Apr.\ 8, 2025), \url{https://www.anthropic.com/news/anthropic-education-report-how-university-students-use-claude}.}
+
+\medskip
+
+In class and in my personal projects, I will use AI most for programming and debugging. That includes explaining error messages, suggesting fixes, translating an idea into code, improving readability, generating unit tests, and helping me document what I built (docstrings, README drafts, usage examples, and clear organization). I will also use AI to generate practice problems and study guides: extra drill questions, quick topic outlines, and sample solutions that I can compare against my own work. The purpose here is not to outsource learning, but to create more reps and faster feedback. For writing, I’ll use AI for editing and clarity such as cleaning up grammar, tightening paragraphs, and restructuring notes, especially when I already know what I’m trying to say but want it to read more cleanly. Finally, I will use AI for low-stakes visual design, like generating logos and basic branding assets for my hockey analytics site and an R package. I’m not a designer, so AI helps me create something presentable so I can focus on the work I’m actually doing: building models, writing code, and communicating results.
+
+\medskip
+
+At the same time, I will not use AI to do my thinking. That means I will not use it to brainstorm my ideas, generate my arguments, or produce final reasoning for assignments. If an assignment is meant to assess my reasoning, I will treat AI as off-limits for the substantive parts. More generally, I won’t use AI in a way that misrepresents someone else’s work as mine, or that crosses the line into academic dishonesty. If a course policy requires disclosure or restricts AI use, I will follow that policy and err on the side of transparency when the boundary is unclear. Because AI can be confidently wrong, I will treat its outputs as drafts rather than authority. When I use AI for code or math, I will verify by running the code, writing tests, checking edge cases, and comparing outputs against known results or simpler baselines. When AI offers an explanation of a concept, I will confirm key points with course materials or trustworthy references before relying on them. If it proposes a proof idea or a statistical method, I will re-derive it myself or validate it independently. My goal is that AI speeds up execution and surfaces possibilities, but my final work still reflects decisions and understanding that I can defend.
+
+\medskip
+
+There are ethical concerns I want to take seriously: academic integrity, attribution, privacy, and over-reliance. Academic integrity is straightforward: I will follow course rules and keep my submissions honest about what reflects my own work. Provenance matters especially for generated visuals; while I’m comfortable using AI to produce a logo or branding for my own project, I will avoid intentionally imitating identifiable living artists or prompting a tool to replicate a specific creator’s style. My intent is functional design, not extracting someone else’s aesthetic or labor. I will also be mindful about what I paste into AI systems: I won’t upload private data, sensitive personal details, or proprietary materials unless I am explicitly allowed to and the tool is approved for that context. Over-reliance is the risk that matters most for my development: even if AI makes tasks faster, I still need to build the underlying skills in statistics, mathematics, and programming. So I will protect time for doing problems myself, writing my own solutions, and working through the hard parts without a shortcut, so that AI supports my learning instead of replacing it. This is consistent with survey evidence that many students feel AI has mixed effects on learning and critical thinking that can be summarized as helpful at times, but also a temptation to think less deeply.\footnote{Colleen Flaherty, ``How AI Is Changing---Not `Killing'---College'' (Aug.\ 29, 2025), \url{https://www.insidehighered.com/news/students/academics/2025/08/29/survey-college-students-views-ai}.}
+
+\medskip
+
+Overall, I plan to use AI as a productivity multiplier for execution (coding, debugging, drafting, formatting, practice generation, documentation, and light design) while keeping core judgment, interpretation, and critical thinking as my responsibility. If I apply these boundaries consistently, AI becomes a tool that improves my workflow and communication without undermining the learning this class is trying to develop.
+
+\medskip
+
+\noindent *I am ok with this plan being shared anonymously publicly.
+
+\end{document}
