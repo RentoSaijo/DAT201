@@ -160,9 +160,7 @@ rate_55_small    <- play_dt[dist_group == '55+ ft'   & lateral_group == '0-10 ft
 rate_55_big      <- play_dt[dist_group == '55+ ft'   & lateral_group == '25+ ft', mean(on_net)]
 ```
 
-Traditional hockey metrics such as expected goals, xGF\%, RAPM, and GAR are useful because they summarize large amounts of game action into a few interpretable numbers. But most of them begin from shots or on-ice results, so they do not fully capture whether an offense forced the defense to move before the shot was taken. My thesis is that hockey teams should supplement classical xG-style metrics with tracking-based measures of pre-shot puck movement and passing context, because spatio-temporal data shows how a chance was created, not only where it ended. A shot from 35 feet after a static possession is not the same as a shot from 35 feet after a fast lateral pass into open space.
-
-That distinction matters even for people who do not follow hockey analytics closely. Common sense says that a shooter is more dangerous when the puck arrives after the defense has been stretched side-to-side. The practical question is whether we can measure that effect consistently enough to improve evaluation. Recent work suggests that we can.
+Traditional hockey metrics such as expected goals, xGF\%, RAPM, and GAR are useful because they summarize large amounts of game action into a few interpretable numbers. But most of them begin from shots or on-ice results, so they do not fully capture whether an offense forced the defense to move before the shot was taken. My thesis is that hockey teams should supplement classical xG-style metrics with tracking-based measures of pre-shot puck movement and passing context, because spatio-temporal data shows how a chance was created, not only where it ended. A shot from 35 feet after a static possession is not the same as a shot from 35 feet after a fast lateral pass into open space. Common sense says that a shooter is more dangerous when the puck arrives after the defense has been stretched side-to-side. The practical question is whether we can measure that effect consistently enough to improve evaluation. Recent work suggests that we can.
 
 # What Existing Tracking Research Shows
 
@@ -222,8 +220,8 @@ The most useful future dataset would be frame-level optical or pose-tracking dat
 
 # References
 
-Big Data Cup. ``Big Data Cup 2026 Data Release.'' GitHub release. Accessed April 3, 2026. \url{https://github.com/bigdatacup/Big-Data-Cup-2026/releases/tag/Data}
+Big Data Cup. Big Data Cup 2026 Data Release. GitHub release. Accessed April 3, 2026. \url{https://github.com/bigdatacup/Big-Data-Cup-2026/releases/tag/Data}
 
-Radke, David, Tim Brecht, and Daniel Radke. ``Identifying Completed Pass Types and Improving Passing Lane Models.'' Linköping Hockey Analytics Conference, 2022. \url{https://cs.uwaterloo.ca/~brecht/papers/passing-linhac-2022.pdf}
+Radke, David, Tim Brecht, and Daniel Radke. "Identifying Completed Pass Types and Improving Passing Lane Models." Linköping Hockey Analytics Conference, 2022. \url{https://cs.uwaterloo.ca/~brecht/papers/passing-linhac-2022.pdf}
 
-Yu, David, Christopher Boucher, Luke Bornn, and Mehrsan Javan. ``Playing Fast Not Loose: Evaluating team-level pace of play in ice hockey using spatio-temporal possession data.'' MIT Sloan Sports Analytics Conference Research Paper Competition, 2019. \url{https://www.lukebornn.com/papers/yu_sloan_2019.pdf}
+Yu, David, Christopher Boucher, Luke Bornn, and Mehrsan Javan. "Playing Fast Not Loose: Evaluating team-level pace of play in ice hockey using spatio-temporal possession data." MIT Sloan Sports Analytics Conference Research Paper Competition, 2019. \url{https://www.lukebornn.com/papers/yu_sloan_2019.pdf}
