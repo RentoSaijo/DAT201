@@ -5,10 +5,10 @@ subtitle: |
   Why Hockey Teams Should Add Tracking-Based Pre-Shot Movement Metrics to Classical xG Models
 author: |
   Rento Saijo
-date: 'April 3, 2026'
+date: 'April 17, 2026'
 fontsize: 10pt
 documentclass: extarticle
-geometry: top=1.25in, bottom=1.25in, left=1.5in, right=1.5in
+geometry: top=1.25in, bottom=1.25in, left=1.25in, right=1.25in
 urlcolor: blue
 linkcolor: blue
 citecolor: blue
@@ -17,7 +17,7 @@ output:
     keep_tex: true
     toc: false
     fig_width: 6.2
-    fig_height: 4.2
+    fig_height: 3.6
     fig_caption: true
 
 header-includes:
@@ -48,7 +48,7 @@ header-includes:
     }
     \makeatother
     \setlength{\parindent}{0pt}
-    \setlength{\parskip}{0.45em}
+    \setlength{\parskip}{0.35em}
     \pagestyle{fancy}
     \fancyhf{}
     \fancyfoot[C]{\small\textsc{Page}~\thepage~\textsc{of}~\pageref{LastPage}}
@@ -83,6 +83,7 @@ par(family = 'cmuserif')
 ggplot2::theme_set(
   ggplot2::theme_minimal(base_family = 'cmuserif', base_size = 10) +
     ggplot2::theme(
+      panel.grid.major = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
       plot.title.position = 'plot'
     )
@@ -120,6 +121,10 @@ play_dt[, dist_group := cut(
   right  = FALSE,
   labels = c('0-25 ft', '25-40 ft', '40-55 ft', '55+ ft')
 )]
+play_dt[, dist_group_label := factor(
+  paste0('Shot distance:\n', dist_group),
+  levels = c('Shot distance:\n0-25 ft', 'Shot distance:\n25-40 ft', 'Shot distance:\n40-55 ft', 'Shot distance:\n55+ ft')
+)]
 
 # Summaries used in the text.
 n_games        <- uniqueN(shot_dt$game_id)
@@ -130,7 +135,7 @@ n_play_shots   <- nrow(play_dt)
 movement_plot_dt <- play_dt[, .(
   on_net_rate = mean(on_net),
   n           = .N
-), by = .(dist_group, lateral_group)]
+), by = .(dist_group, dist_group_label, lateral_group)]
 
 movement_fit_cont <- glm(
   on_net ~ shot_distance_ft + abs_y_ft + lateral_10ft,
@@ -143,6 +148,11 @@ movement_fit_cat <- glm(
   data   = play_dt,
   family = binomial()
 )
+
+beta_hat_0 <- coef(movement_fit_cont)['(Intercept)']
+beta_hat_1 <- coef(movement_fit_cont)['shot_distance_ft']
+beta_hat_2 <- coef(movement_fit_cont)['abs_y_ft']
+beta_hat_3 <- coef(movement_fit_cont)['lateral_10ft']
 
 or_per_10ft <- exp(coef(movement_fit_cont)['lateral_10ft'])
 or_25plus   <- exp(coef(movement_fit_cat)['lateral_group25+ ft'])
@@ -160,21 +170,19 @@ rate_55_small    <- play_dt[dist_group == '55+ ft'   & lateral_group == '0-10 ft
 rate_55_big      <- play_dt[dist_group == '55+ ft'   & lateral_group == '25+ ft', mean(on_net)]
 ```
 
-Traditional hockey metrics such as expected goals, xGF\%, RAPM, and GAR are useful because they summarize large amounts of game action into a few interpretable numbers. But most of them begin from shots or on-ice results, so they do not fully capture whether an offense forced the defense to move before the shot was taken. My thesis is that hockey teams should supplement classical xG-style metrics with tracking-based measures of pre-shot puck movement and passing context, because spatio-temporal data shows how a chance was created, not only where it ended. A shot from 35 feet after a static possession is not the same as a shot from 35 feet after a fast lateral pass into open space. Common sense says that a shooter is more dangerous when the puck arrives after the defense has been stretched side-to-side. The practical question is whether we can measure that effect consistently enough to improve evaluation. Recent work suggests that we can.
+Hockey offense is built around creating space near the net before defenders can recover. A team can do that by carrying the puck, passing quickly, cycling along the boards, or shooting before the defense gets set. Analysts often summarize those attacks with shot-based metrics such as expected goals, xGF\%, RAPM, and GAR. Those measures are useful because they turn many events into a few interpretable numbers, but they mostly begin from the shot itself or from on-ice results after the fact. That creates a limit. Two shots can come from similar locations while being created in very different ways. One may come after the offense holds the puck in place and lets the defense get set. Another may come after a fast lateral pass forces the goalie and defenders to slide across the width of the rink. My thesis is that hockey teams should supplement classical xG-style metrics with tracking-based measures of pre-shot puck movement and passing context, because spatio-temporal data shows how a chance was created, not only where it ended. In simple terms, a shot from 35 feet after a static possession is not the same as a shot from 35 feet after the defense has been pulled out of shape.
 
 # What Existing Tracking Research Shows
 
-Yu et al.\ (2019) make this point directly with a large Sportlogiq spatio-temporal dataset drawn from professional hockey. Their most important result for this paper is simple: at 5-on-5, high pre-shot east-west pace increased shooting percentage by 38\% over low pre-shot east-west pace even though the average shot distance remained in roughly the same 37-40 foot band. They also found that higher pace before the event improved other offensive processes, including successful zone entries and defensive regroups. The implication is that movement before the shot changes outcomes even when shot location stays broadly similar. A model that only looks at the final shot coordinates leaves out part of the story.
+Yu et al.\ (2019) make this point directly with a large Sportlogiq spatio-temporal dataset drawn from professional hockey. Their most important result for this paper is simple: at 5-on-5, high pre-shot east-west pace increased shooting percentage by 38\% over low pre-shot east-west pace even though the average shot distance remained in roughly the same 37-40 foot band. Here, east-west pace mainly refers to offensive puck movement across the width of the rink before the shot. Tracking data records the puck's changing coordinates over time, so researchers can estimate how much and how quickly the puck moved laterally before the release. That movement matters because it usually forces the goalie and defenders to move laterally too. The implication is that movement before the shot changes outcomes even when shot location stays broadly similar. A model that only looks at the final shot coordinates leaves out part of the story.
 
-Radke, Brecht, and Radke (2022) show the same idea from a passing-lane perspective using 198 NHL games of puck and player tracking data. They found that about 59\% of completed one-bank passes had an indirect lane that was at least as open as the direct alternative, and their expected-movement model reduced receiver-location error in more than 94\% of completed passes. In plain language, the smartest pass is often not the obvious straight-line pass that a static event log would suggest. Tracking data matters because it can measure the geometry and timing that make a play available in the first place.
-
-Together, these sources push the animating question in a more specific direction. Instead of asking, in general, how tracking can create insights beyond xG, a sharper claim is that tracking is especially valuable when it measures pre-shot movement and passing context. Those are exactly the parts of offense that shot-only models tend to flatten.
+Radke, Brecht, and Radke (2022) show the same idea from a passing-lane perspective using 198 NHL games of puck and player tracking data. They found that about 59\% of completed one-bank passes had an indirect lane that was at least as open as the direct alternative, and their expected-movement model reduced receiver-location error in more than 94\% of completed passes. In plain language, the smartest pass is often not the obvious straight-line pass that a static event log would suggest. Tracking data matters because it can measure the geometry and timing that make a play available in the first place. Overall, these sources push the animating question in a more specific direction. Instead of asking, in general, how tracking can create insights beyond xG, a sharper claim is that tracking is especially valuable when it measures pre-shot movement and passing context. Those are exactly the parts of offense that shot-only models tend to flatten.
 
 # What the Big Data Cup Sample Adds
 
 To test that claim with my own data, I used the public 2026 Big Data Cup release, which contains synchronized event and tracking files for `r n_games` anonymized games. The full sample includes `r n_shots_total` shot attempts, of which `r n_shots_5v5` came at 5-on-5. I then linked each 5-on-5 shot to the most recent completed play by the same team within five seconds, which produced `r n_play_shots` even-strength play-to-shot sequences. For each sequence, I measured pre-shot lateral puck movement as the absolute east-west change in the completed play's coordinates. I focus on whether the shot finished on net, because in a ten-game public sample that is a more stable outcome than goals alone.
 
-```{r fig-movement, fig.cap = 'Within every shot-distance band, the highest on-net rate comes from plays with at least 25 feet of lateral puck movement before the shot. Sample restricted to 5-on-5 shots preceded by a completed same-team play within five seconds (n = 655).'}
+```{r fig-movement, fig.cap = 'Within every shot-distance band, the highest on-net rate comes from plays with at least 25 feet of lateral puck movement before the shot. Facets show shot-distance groups. Sample restricted to 5-on-5 shots preceded by a completed same-team play within five seconds (n = 655).'}
 ggplot(
   movement_plot_dt,
   aes(x = lateral_group, y = on_net_rate, fill = lateral_group)
@@ -186,7 +194,7 @@ ggplot(
     size = 2.8,
     family = 'cmuserif'
   ) +
-  facet_wrap(~ dist_group, nrow = 2) +
+  facet_wrap(~ dist_group_label, nrow = 2) +
   scale_fill_manual(values = c('#8fb9d4', '#4d88b3', '#0b3954')) +
   scale_y_continuous(
     limits = c(0, 0.75),
@@ -206,9 +214,16 @@ ggplot(
 
 Figure 1 supports the thesis clearly. In every shot-distance band, the highest on-net rate comes from the largest movement group, the plays with at least 25 feet of lateral puck movement. Among shots from 0-25 feet, the on-net rate rises from `r pct_fmt(rate_0_25_small)` after small 0-10 foot movement to `r pct_fmt(rate_0_25_big)` after 25+ feet of movement. In the 25-40 foot band, it rises from `r pct_fmt(rate_25_40_small)` to `r pct_fmt(rate_25_40_big)`. In the 40-55 foot band, it rises from `r pct_fmt(rate_40_55_small)` to `r pct_fmt(rate_40_55_big)`. Even on long shots from 55+ feet, the biggest east-west plays still perform better, `r pct_fmt(rate_55_small)` versus `r pct_fmt(rate_55_big)`.
 
-Just as importantly, this is not simply a closer-shot story. The biggest-movement group in my sample actually came from almost the same average shot distance as the smallest-movement group, `r num_fmt(mean_dist_big)` feet versus `r num_fmt(mean_dist_small)` feet. A logistic regression that controls for shot distance and shot width still finds a positive movement effect: each additional 10 feet of lateral pre-shot movement increased the odds that a shot ended on net by about `r pct_fmt(or_per_10ft - 1)` and the 25+ foot group had about `r num_fmt(or_25plus, 2)` times the on-net odds of the 0-10 foot group. This does not mean lateral movement explains every good chance, but it does mean the process leading into the shot carries independent information that a shot-only model can miss.
+Just as importantly, this is not simply a closer-shot story. A natural objection would be that the high-movement plays only look better because they end much nearer to the net. In this sample, that is not what happens: the biggest-movement group averaged `r num_fmt(mean_dist_big)` feet from the net, while the smallest-movement group averaged `r num_fmt(mean_dist_small)` feet, which is nearly identical. To make that comparison explicit, I estimated the logistic model
 
-This result fits well with the published research. Yu et al.\ argue that east-west pace changes shooting outcomes even when distance is held roughly constant; the Big Data Cup sample shows the same pattern in public competition data. Radke et al.\ show why that should not be surprising: tracking data captures passing choices and receiver movement that ordinary shot logs compress away. The shared lesson is that offensive threat is not only about where a shot came from. It is also about whether the defense had time to get set.
+\[
+\log\left(\frac{p_i}{1 - p_i}\right)
+= \beta_0 + \beta_1 \, \text{ShotDistance}_i + \beta_2 \, \text{AbsY}_i + \beta_3 \, \text{LateralMovement}_{i},
+\]
+
+where \(p_i\) is the probability that shot \(i\) finished on net, \(\text{ShotDistance}_i\) is the shot's distance from the goal, \(\text{AbsY}_i\) is its absolute side-to-side location, and \(\text{LateralMovement}_i\) is the pre-shot east-west puck movement measured in 10-foot units. In the fitted model, the movement coefficient is \(\hat{\beta}_3 = `r num_fmt(beta_hat_3, 3)`\), while the shot-distance coefficient is \(\hat{\beta}_1 = `r num_fmt(beta_hat_1, 3)`\). So, holding the other terms fixed, each additional 10 feet of lateral pre-shot movement increased the odds that a shot ended on net by about `r pct_fmt(or_per_10ft - 1)`, whereas shots taken farther from the net became less likely to finish on net. The categorical version of the same model shows that the 25+ foot group had about `r num_fmt(or_25plus, 2)` times the on-net odds of the 0-10 foot group. This does not mean lateral movement explains every good chance, but it does mean the process leading into the shot carries independent information that a shot-only model can miss.
+
+This result fits well with the published research. Yu et al.\ argue that east-west pace changes shooting outcomes even when distance is held roughly constant; the Big Data Cup sample shows the same pattern in public competition data. Radke et al.\ show why that should not be surprising: tracking data captures passing choices and receiver movement that ordinary shot logs compress away. The shared lesson is that offensive threat is not merely about where a shot came from. It is also about whether the defense had time to get set.
 
 # Conclusion
 
@@ -216,12 +231,14 @@ The two sources support the same argument from different angles. Yu et al.\ show
 
 A reasonable counterargument is that modern xG models already include some context, such as shot type, rush flags, or rebound indicators, and that my public sample is much smaller than a full NHL season. I do not think that is a major problem for the thesis, because I am arguing for supplementation rather than replacement. If pre-shot movement still matters after holding shot distance roughly constant, then teams lose information when they collapse everything back to the shot alone. The right response is broader validation, not a return to purely shot-based models.
 
-The most useful future dataset would be frame-level optical or pose-tracking data that identifies goalie sightlines and defender stick positions at the moment of the pass and shot. That kind of data would let analysts distinguish two chances from the same x-y location when one is a clean one-timer into an open lane and the other is a screened point shot through traffic. In other words, it would help measure not only motion, but also visibility and access to the net.
+These methods also suggest practical coaching questions. Offensively, coaches may want to create more sequences that move the puck laterally before the shot, especially if those sequences force the goalie to reset. Defensively, coaches may want to pressure puck carriers earlier and steer the puck toward the boards so that cross-rink movement is harder to complete.
+
+The most useful future dataset would be frame-level optical or pose-tracking data that identifies goalie sightlines and defender stick positions at the moment of the pass and shot. That would let analysts distinguish two chances from the same x-y location when one is a clean one-timer into an open lane and the other is a screened point shot through traffic. Another natural extension would be to test whether lateral movement farther from the shot, such as 10-5 seconds beforehand, still matters or whether the effect is concentrated in the final seconds.
 
 # References
 
 Big Data Cup. Big Data Cup 2026 Data Release. GitHub release. Accessed April 3, 2026. \url{https://github.com/bigdatacup/Big-Data-Cup-2026/releases/tag/Data}
 
-Radke, David, Tim Brecht, and Daniel Radke. "Identifying Completed Pass Types and Improving Passing Lane Models." Linköping Hockey Analytics Conference, 2022. \url{https://cs.uwaterloo.ca/~brecht/papers/passing-linhac-2022.pdf}
+Radke, David, Tim Brecht, and Daniel Radke. Identifying Completed Pass Types and Improving Passing Lane Models. Linköping Hockey Analytics Conference, 2022. \url{https://cs.uwaterloo.ca/~brecht/papers/passing-linhac-2022.pdf}
 
-Yu, David, Christopher Boucher, Luke Bornn, and Mehrsan Javan. "Playing Fast Not Loose: Evaluating team-level pace of play in ice hockey using spatio-temporal possession data." MIT Sloan Sports Analytics Conference Research Paper Competition, 2019. \url{https://www.lukebornn.com/papers/yu_sloan_2019.pdf}
+Yu, David, Christopher Boucher, Luke Bornn, and Mehrsan Javan. Playing Fast Not Loose. MIT Sloan Sports Analytics Conference Research Paper Competition, 2019. \url{https://www.lukebornn.com/papers/yu_sloan_2019.pdf}
