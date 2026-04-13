@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Courses | Rento Saijo</title>
+    <meta name="description" content="Pathway courses for Rento Saijo's Data, Information and Society ePortfolio." />
+    <link rel="icon" type="image/png" href="assets/letter_raw.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="shell">
+        <a class="brand" href="index.html">
+          <img class="brand-mark" src="assets/RentoSaijo_Background.jpeg" alt="Portrait of Rento Saijo" />
+          <div class="brand-text">
+            <p class="brand-title">Rento Saijo</p>
+            <p class="brand-subtitle">Data, Information &amp; Society ePortfolio</p>
+          </div>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Open navigation">
+          Menu
+        </button>
+        <nav class="site-nav" data-nav>
+          <a href="index.html">Home</a>
+          <a href="question.html">Question</a>
+          <a class="active" href="courses.html">Courses</a>
+          <a href="engagement.html">Engagement</a>
+          <a href="reflection.html">Reflection</a>
+          <a href="assignments.html">Assignments</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="content-hero">
+        <div>
+          <div class="eyebrow">Itinerary Courses</div>
+          <h1>Coursework shaping the pathway</h1>
+          <p class="subhead">
+            These three courses work together as a progression: mathematical foundations, machine learning methods, and then a
+            future computer vision course that helps me better understand how visual and tracking-style data are created,
+            processed, and limited before anyone starts modeling them.
+          </p>
+        </div>
+      </section>
+
+      <section class="course-grid section">
+        <article class="course-card">
+          <span class="status-pill">Completed</span>
+          <span class="course-number">MAT 316 • Probability</span>
+          <h3>Foundation for uncertainty, randomness, and model thinking</h3>
+          <p>
+            Connecticut College describes MAT 316 as a course on randomness and uncertainty covering conditional probability,
+            random variables, distributions, expected value, variance, joint distributions, and the law of large numbers.
+            This course matters for my pathway because nearly everything I want to do in analytics depends on probabilistic
+            reasoning. It gave me the mathematical language behind uncertainty, prediction, and inference, which I need if I want
+            my hockey models to be more than just computational experiments.
+          </p>
+          <a class="text-link desc-link" href="https://conncoll.smartcatalogiq.com/en/2022-2023/catalog/courses/mat-mathematics/300/mat-316" target="_blank" rel="noopener noreferrer">Official course description</a>
+        </article>
+
+        <article class="course-card">
+          <span class="status-pill current">Currently taking</span>
+          <span class="course-number">STA 336 • Statistical Machine Learning</span>
+          <h3>From classical statistics to modern predictive methods</h3>
+          <p>
+            The official catalog describes STA 336 as an advanced course in important machine learning topics, including both
+            supervised and unsupervised learning with applications in R.
+            This is one of the clearest pathway courses for me because it directly supports the modeling side of my animating
+            question. It helps me compare interpretable baselines with more flexible methods while keeping performance,
+            validation, and communication in view at the same time.
+          </p>
+          <a class="text-link desc-link" href="https://conncoll.smartcatalogiq.com/en/2022-2023/catalog/courses/sta-statistics/300/sta-336" target="_blank" rel="noopener noreferrer">Official course description</a>
+        </article>
+
+        <article class="course-card">
+          <span class="status-pill future">Planned</span>
+          <span class="course-number">COM 322 • Computer Vision</span>
+          <h3>Seeing beyond event logs</h3>
+          <p>
+            Connecticut College describes COM 322 as a study of computational methods that enable machines to see, covering image
+            formation, processing, feature detection, segmentation, recognition, and video processing.
+            I have not taken this yet, but it is still central to the next phase of my question. More than collecting brand-new
+            data myself, I want to understand the technical background behind how visual and tracking-style data are generated,
+            what can go wrong in those pipelines, and what limits those methods impose on later analysis.
+          </p>
+          <a class="text-link desc-link" href="https://conncoll.smartcatalogiq.com/en/2022-2023/catalog/courses/com-computer-science/300/com-322" target="_blank" rel="noopener noreferrer">Official course description</a>
+        </article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <h2>How these courses fit together</h2>
+          <p>The value of the itinerary is in the sequence, not just the individual classes.</p>
+        </div>
+        <div class="timeline timeline-card">
+          <div class="timeline-item">
+            <h3>Probability gives the language</h3>
+            <p>
+              It grounds my understanding of uncertainty, expected outcomes, and what it means to make a defensible probabilistic
+              claim.
+            </p>
+          </div>
+          <div class="timeline-item">
+            <h3>Machine learning gives the modeling toolkit</h3>
+            <p>
+              It expands that foundation into prediction, validation, and comparison across different kinds of models and data.
+            </p>
+          </div>
+          <div class="timeline-item">
+            <h3>Computer vision opens a new data layer</h3>
+            <p>
+              It helps me understand how richer visual and tracking-style signals are built, what their blind spots are, and how
+              those upstream choices affect any downstream hockey model.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-inner">
+          <p>Rento Saijo • Connecticut College • Data, Information &amp; Society Pathway</p>
+          <div class="footer-links">
+            <a href="mailto:rsaijo@conncoll.edu">rsaijo@conncoll.edu</a>
+            <a href="https://www.linkedin.com/in/rentosaijo/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="https://github.com/RentoSaijo" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://x.com/RentoSaijo" target="_blank" rel="noopener noreferrer">X</a>
+            <a href="https://www.youtube.com/@RentoSaijo" target="_blank" rel="noopener noreferrer">YouTube</a>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </body>
+</html>
